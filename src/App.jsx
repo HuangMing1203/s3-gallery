@@ -5,6 +5,7 @@ import {
   Toolbar,
   Typography,
   Container,
+  CssBaseline,
   TextField,
   Button,
   Box,
@@ -70,7 +71,8 @@ export default function App() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="primary" enableColorOnDark>
+      <CssBaseline />
+      <AppBar position="static">
         <Toolbar>
           <PhotoLibraryIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
