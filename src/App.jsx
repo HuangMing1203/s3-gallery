@@ -74,7 +74,7 @@ export default function App() {
         <Toolbar>
           <PhotoLibraryIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            S3 Image Gallery
+            S3 Gallery
           </Typography>
         </Toolbar>
       </AppBar>

@@ -1,4 +1,4 @@
-# S3 Image Gallery
+# S3 Gallery
 
 A static React website that displays an image gallery from a public AWS S3 file list (bucket XML).
 
