@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import {
   AppBar,
   Toolbar,
   Typography,
   Container,
-  CssBaseline,
   TextField,
   Button,
   Box,
@@ -71,7 +70,6 @@ export default function App() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <CssBaseline />
       <AppBar position="static">
         <Toolbar>
           <PhotoLibraryIcon sx={{ mr: 2 }} />
