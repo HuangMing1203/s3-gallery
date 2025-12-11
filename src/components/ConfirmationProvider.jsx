@@ -8,7 +8,7 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 
 const ConfirmationContext = createContext(() =>
-  Promise.reject('no confirmation context provided'),
+  Promise.reject(new Error('no confirmation context provided')),
 )
 
 const ConfirmationDialog = ({ open, onConfirm, onCancel }) => (
@@ -49,12 +49,11 @@ export function ConfirmationProvider({ children }) {
         open: true,
         onConfirm() {
           setState(initialState)
-          if (rejectOnCancel) resolve()
-          else resolve(true)
+          resolve(true)
         },
         onCancel() {
           setState(initialState)
-          if (rejectOnCancel) reject()
+          if (rejectOnCancel) reject(new Error('cancelled'))
           else resolve(false)
         },
       }),

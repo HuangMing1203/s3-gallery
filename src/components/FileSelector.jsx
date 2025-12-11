@@ -26,16 +26,19 @@ function FetchFile(props) {
     placeholder = '',
     loading = false,
     onChange = () => {},
-    onClear = () => {},
-    onLoadStart = () => {},
-    onLoadEnd = () => {},
+    onLoadingChange = () => {},
     onSubmit = () => {},
-  } = (props = props || {})
+  } = props || {}
 
   const inputRef = useRef(null)
 
   const [errorMessage, setErrorMessage] = useState(false)
   const error = errorMessage !== false
+
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') handleSubmit()
+    if (e.key === 'Escape') onChange('')
+  }
 
   function handleChange(e) {
     const newValue = e.target.value
@@ -47,10 +50,11 @@ function FetchFile(props) {
     if (disabled || loading) return
     setErrorMessage(false)
     try {
-      onLoadStart()
+      onLoadingChange(true)
       const res = await axios
         .get(value, { responseType: 'blob' })
-        .finally(onLoadEnd)
+        .finally(() => onLoadingChange(false))
+      const blob = res.data
       // const res = await fetch(value, {
       //   method: 'get',
       //   mode: 'no-cors',
@@ -58,16 +62,16 @@ function FetchFile(props) {
       //   //   // 'Access-Control-Allow-Origin': '*',
       //   //   // "X-Requested-With": "XMLHttpRequest",
       //   // },
-      // }).finally(onLoadEnd)
+      // }).finally(() => onLoadingChange(false))
       // if (!res.ok) {
       //   setErrorMessage(`Fetch failed: HTTP ${res.status} ${res.statusText}`)
       //   return
       // }
+      // const blob = await res.blob()
       onSubmit({
         source: 'fetch',
         url: value,
-        blob: res.data,
-        // blob: await res.blob(),
+        blob: blob,
       })
     } catch (err) {
       setErrorMessage(`Fetch error: ${err.message}`)
@@ -88,6 +92,7 @@ function FetchFile(props) {
         disabled={disabled}
         color={error ? 'error' : color}
         placeholder={placeholder}
+        onKeyUp={handleKeyPress}
         fullWidth
         startAdornment={
           <InputAdornment position="start">
@@ -97,7 +102,7 @@ function FetchFile(props) {
         endAdornment={
           <InputAdornment position="end">
             {value && !disabled && (
-              <IconButton onClick={onClear}>
+              <IconButton onClick={() => onChange('')}>
                 <ClearIcon />
               </IconButton>
             )}
@@ -253,9 +258,7 @@ export default function FileSelector(props) {
         placeholder={placeholder}
         value={value}
         onChange={setValue}
-        onLoadStart={() => setLoading(true)}
-        onLoadEnd={() => setLoading(false)}
-        onClear={() => setValue('')}
+        onLoadingChange={setLoading}
         onSubmit={handleSubmit}
       />
       <Divider orientation="vertical" variant="middle" flexItem />

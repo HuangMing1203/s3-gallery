@@ -5,63 +5,20 @@ import {
   Typography,
   Container,
   Box,
-  Skeleton,
   Alert,
-  Paper,
   Dialog,
 } from '@mui/material'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
-import LazyImage from './LazyImage'
 import FileSelector from './components/FileSelector'
-
-function parseS3FileList(xml, inputUrl) {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(xml, 'application/xml')
-  const contents = doc.getElementsByTagName('Contents')
-
-  // Get base URL without query or trailing slash. If inputUrl isn't a valid URL
-  // (for example a `file:` or `blob:` pseudo-url) fall back to empty base.
-  let baseUrl = ''
-  try {
-    const urlObj = new URL(inputUrl)
-    baseUrl = urlObj.origin + urlObj.pathname.replace(/\/$/, '')
-  } catch (e) {
-    baseUrl = ''
-  }
-
-  const images = []
-  for (let i = 0; i < contents.length; i++) {
-    const key = contents[i].getElementsByTagName('Key')[0]?.textContent
-    const lastModified =
-      contents[i].getElementsByTagName('LastModified')[0]?.textContent
-    if (key && /\.(jpe?g|png|gif|bmp|webp)$/i.test(key)) {
-      // Join baseUrl and key (handle leading/trailing slash). If baseUrl is
-      // empty, use the key as-is which may be a relative path.
-      const imgUrl = baseUrl
-        ? baseUrl.replace(/\/$/, '') + '/' + key.replace(/^\/+/, '')
-        : key
-      images.push({
-        url: imgUrl,
-        lastModified: lastModified ? new Date(lastModified) : new Date(0),
-      })
-    }
-  }
-  // Sort from newest to oldest
-  images.sort((a, b) => b.lastModified - a.lastModified)
-  return images
-}
+import LazyImage from './components/LazyImage'
+import parseS3FileList from './utils/parseS3FileList'
 
 export default function App() {
-  const [inputUrl, setInputUrl] = useState('')
   const [images, setImages] = useState([])
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [imgLoaded, setImgLoaded] = useState({})
-  const [containerRatios, setContainerRatios] = useState({})
   const [previewImg, setPreviewImg] = useState(null)
 
   const handleFileSubmit = async (blob, url, source) => {
-    setLoading(true)
     setError('')
     setImages([])
     try {
@@ -73,11 +30,10 @@ export default function App() {
     } catch (err) {
       setError('Failed to parse the S3 file list.')
     }
-    setLoading(false)
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <>
       <AppBar position="static">
         <Toolbar>
           <PhotoLibraryIcon sx={{ mr: 2 }} />
@@ -86,7 +42,10 @@ export default function App() {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Container
+        maxWidth="xl"
+        sx={{ my: 4, display: 'flex', flexFlow: 'nowrap column', gap: 3 }}
+      >
         <FileSelector
           placeholder="S3 file list URL (XML)"
           accept="text/xml,application/xml"
@@ -101,76 +60,22 @@ export default function App() {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
               gap: 2,
-              mt: 3,
             }}
           >
-            {images.map((img, i) => {
-              const ratio = containerRatios[img.url] || { width: 1, height: 1 }
-              const aspect = ratio.height / ratio.width
-              return (
-                <Paper
-                  key={img.url}
-                  sx={{
-                    position: 'relative',
-                    width: '100%',
-                    pt: `${aspect * 100}%`, // dynamic aspect ratio
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    transition: 'padding-top 0.3s',
-                  }}
-                >
-                  {!imgLoaded[img.url] && (
-                    <Skeleton
-                      variant="rectangular"
-                      animation="wave"
-                      sx={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    />
-                  )}
-                  <LazyImage
-                    src={img.url}
-                    alt={`img-${i}`}
-                    onLoad={(size) => {
-                      setImgLoaded((l) => ({ ...l, [img.url]: true }))
-                      if (size && size.width && size.height) {
-                        setContainerRatios((r) => ({
-                          ...r,
-                          [img.url]: size,
-                        }))
-                      }
-                    }}
-                    onClick={() => setPreviewImg(img)}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: 8,
-                      opacity: imgLoaded[img.url] ? 1 : 0,
-                      transition: 'opacity 0.3s',
-                    }}
-                  />
-                </Paper>
-              )
-            })}
+            {images.map((img, i) => (
+              <LazyImage
+                key={img.url}
+                src={img.url}
+                alt={`img-${i}`}
+                onClick={() => setPreviewImg(img)}
+              />
+            ))}
           </Box>
         ) : (
-          !loading &&
           !error && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              align="center"
-              sx={{ mt: 4 }}
-            >
+            <Typography variant="body2" color="text.secondary" align="center">
               No images loaded yet.
             </Typography>
           )
@@ -179,36 +84,19 @@ export default function App() {
         <Dialog
           open={!!previewImg}
           onClose={() => setPreviewImg(null)}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            sx: {
-              bgcolor: 'background.default',
-              borderRadius: 0,
-              boxShadow: 8,
-              width: 'unset',
-            },
-          }}
+          maxWidth={false}
+          slotProps={{ paper: { sx: { borderRadius: 0 } } }}
         >
-          <Box
-            sx={{ position: 'relative', bgcolor: 'black', textAlign: 'center' }}
-          >
-            {previewImg && (
-              <img
-                src={previewImg.url}
-                alt="preview"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '80vh',
-                  margin: 'auto',
-                  display: 'block',
-                  background: '#222',
-                }}
-              />
-            )}
-          </Box>
+          <img
+            src={previewImg?.url}
+            alt="preview"
+            style={{
+              maxWidth: '100%',
+              maxHeight: '80vh',
+            }}
+          />
         </Dialog>
       </Container>
-    </Box>
+    </>
   )
 }
