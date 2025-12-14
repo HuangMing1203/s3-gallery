@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react'
+import { useErrorMessage } from './ErrorMessageProvider'
+import request from '../utils/request'
 
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import ClearIcon from '@mui/icons-material/Clear'
@@ -13,8 +15,6 @@ import Paper from '@mui/material/Paper'
 import Tooltip from '@mui/material/Tooltip'
 import BlobInputDialog from './BlobInputDialog'
 import ConfirmationProvider from './ConfirmationProvider'
-import { useErrorMessage } from './ErrorMessageProvider'
-import request from '../utils/request'
 
 function FetchFile(props) {
   const {

@@ -1,16 +1,14 @@
 import { useState } from 'react'
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Container,
-  Box,
-  Dialog,
-} from '@mui/material'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import FileSelector from './components/FileSelector'
 import LazyImage from './components/LazyImage'
 import parseS3FileList from './utils/parseS3FileList'
+import AppBar from '@mui/material/AppBar'
+import Box from '@mui/material/Box'
+import Container from '@mui/material/Container'
+import Dialog from '@mui/material/Dialog'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
 import {
   ErrorMessageProvider,
   useErrorMessage,

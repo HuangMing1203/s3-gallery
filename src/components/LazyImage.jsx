@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import { Paper, Skeleton } from '@mui/material'
+import { useState } from 'react'
+import Paper from '@mui/material/Paper'
+import Skeleton from '@mui/material/Skeleton'
 
 export default function LazyImage({ src, alt, onClick }) {
   const [loaded, setLoaded] = useState(false)
