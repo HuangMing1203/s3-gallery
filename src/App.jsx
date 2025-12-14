@@ -5,18 +5,19 @@ import {
   Typography,
   Container,
   Box,
-  Alert,
   Dialog,
 } from '@mui/material'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import FileSelector from './components/FileSelector'
 import LazyImage from './components/LazyImage'
 import parseS3FileList from './utils/parseS3FileList'
+import {
+  ErrorMessageProvider,
+  useErrorMessage,
+} from './components/ErrorMessageProvider'
 
-export default function App() {
-  const [images, setImages] = useState([])
-  const [error, setError] = useState('')
-  const [previewImg, setPreviewImg] = useState(null)
+function S3FileSelector({ children, setImages }) {
+  const setError = useErrorMessage()
 
   const handleFileSubmit = async (blob, url, source) => {
     setError('')
@@ -33,6 +34,19 @@ export default function App() {
   }
 
   return (
+    <FileSelector
+      placeholder="S3 file list URL (XML)"
+      accept="text/xml,application/xml"
+      onSubmit={handleFileSubmit}
+    />
+  )
+}
+
+export default function App() {
+  const [images, setImages] = useState([])
+  const [previewImg, setPreviewImg] = useState(null)
+
+  return (
     <>
       <AppBar position="static">
         <Toolbar>
@@ -46,16 +60,9 @@ export default function App() {
         maxWidth="xl"
         sx={{ my: 4, display: 'flex', flexFlow: 'nowrap column', gap: 3 }}
       >
-        <FileSelector
-          placeholder="S3 file list URL (XML)"
-          accept="text/xml,application/xml"
-          onSubmit={handleFileSubmit}
-        />
-        {error && (
-          <Alert severity="error" sx={{ mt: 3 }}>
-            {error}
-          </Alert>
-        )}
+        <ErrorMessageProvider>
+          <S3FileSelector setImages={setImages} />
+        </ErrorMessageProvider>
         {images.length > 0 ? (
           <Box
             sx={{
@@ -74,11 +81,9 @@ export default function App() {
             ))}
           </Box>
         ) : (
-          !error && (
-            <Typography variant="body2" color="text.secondary" align="center">
-              No images loaded yet.
-            </Typography>
-          )
+          <Typography variant="body2" color="text.secondary" align="center">
+            No images loaded yet.
+          </Typography>
         )}
         {/* Image preview dialog */}
         <Dialog

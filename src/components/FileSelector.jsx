@@ -1,27 +1,25 @@
 import { useRef, useState } from 'react'
-import { useFormControl } from '@mui/material/FormControl'
-import axios from 'axios'
 
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import ClearIcon from '@mui/icons-material/Clear'
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload'
 import EditDocumentIcon from '@mui/icons-material/EditDocument'
 import ErrorIcon from '@mui/icons-material/Error'
-import Alert from '@mui/material/Alert'
 import Divider from '@mui/material/Divider'
-import FormControl from '@mui/material/FormControl'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
 import InputBase from '@mui/material/InputBase'
 import Paper from '@mui/material/Paper'
-import Snackbar from '@mui/material/Snackbar'
 import Tooltip from '@mui/material/Tooltip'
 import BlobInputDialog from './BlobInputDialog'
 import ConfirmationProvider from './ConfirmationProvider'
+import { useErrorMessage } from './ErrorMessageProvider'
+import request from '../utils/request'
 
 function FetchFile(props) {
-  const { color = 'inherit', disabled = false } = useFormControl() || {}
   const {
+    color = 'inherit',
+    disabled = false,
     value = '',
     placeholder = '',
     loading = false,
@@ -30,10 +28,12 @@ function FetchFile(props) {
     onSubmit = () => {},
   } = props || {}
 
-  const inputRef = useRef(null)
-
-  const [errorMessage, setErrorMessage] = useState(false)
-  const error = errorMessage !== false
+  const [error, setError] = useState(false)
+  const showErrorMessage = useErrorMessage()
+  function setErrorMessage(message) {
+    setError(!!message)
+    if (message) showErrorMessage(message)
+  }
 
   function handleKeyPress(e) {
     if (e.key === 'Enter') handleSubmit()
@@ -42,51 +42,29 @@ function FetchFile(props) {
 
   function handleChange(e) {
     const newValue = e.target.value
-    setErrorMessage(false)
+    setError(false)
     onChange(newValue)
   }
 
   async function handleSubmit() {
     if (disabled || loading) return
-    setErrorMessage(false)
-    try {
-      onLoadingChange(true)
-      const res = await axios
-        .get(value, { responseType: 'blob' })
-        .finally(() => onLoadingChange(false))
-      const blob = res.data
-      // const res = await fetch(value, {
-      //   method: 'get',
-      //   mode: 'no-cors',
-      //   // headers: {
-      //   //   // 'Access-Control-Allow-Origin': '*',
-      //   //   // "X-Requested-With": "XMLHttpRequest",
-      //   // },
-      // }).finally(() => onLoadingChange(false))
-      // if (!res.ok) {
-      //   setErrorMessage(`Fetch failed: HTTP ${res.status} ${res.statusText}`)
-      //   return
-      // }
-      // const blob = await res.blob()
-      onSubmit({
-        source: 'fetch',
-        url: value,
-        blob: blob,
+    setError(false)
+    onLoadingChange(true)
+    return request(value)
+      .finally(() => onLoadingChange(false))
+      .then((blob) => {
+        onSubmit({
+          source: 'fetch',
+          url: value,
+          blob: blob,
+        })
       })
-    } catch (err) {
-      setErrorMessage(`Fetch error: ${err.message}`)
-    }
-  }
-
-  function handleSnackbarClose(e, reason) {
-    if (reason === 'clickaway') return
-    setErrorMessage('')
+      .catch((err) => setErrorMessage(err.message))
   }
 
   return (
     <>
       <InputBase
-        inputRef={inputRef}
         value={value}
         onChange={handleChange}
         disabled={disabled}
@@ -110,20 +88,6 @@ function FetchFile(props) {
         }
       />
 
-      <Snackbar
-        open={!!errorMessage}
-        onClose={handleSnackbarClose}
-        autoHideDuration={6000}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity="error"
-          sx={{ width: '100%' }}
-        >
-          {errorMessage}
-        </Alert>
-      </Snackbar>
-
       <Tooltip title="Submit file URL">
         <IconButton
           color={color}
@@ -139,8 +103,12 @@ function FetchFile(props) {
 }
 
 function UploadFile(props) {
-  const { color = 'inherit', disabled = false } = useFormControl() || {}
-  const { accept = '*/*', onSubmit = () => {} } = props || {}
+  const {
+    color = 'inherit',
+    disabled = false,
+    accept = '*/*',
+    onSubmit = () => {},
+  } = props || {}
 
   const inputRef = useRef(null)
 
@@ -180,8 +148,11 @@ function UploadFile(props) {
 }
 
 function InputFile(props) {
-  const { color = 'inherit', disabled = false } = useFormControl() || {}
-  const { onSubmit = () => {} } = props || {}
+  const {
+    color = 'inherit',
+    disabled = false,
+    onSubmit = () => {},
+  } = props || {}
 
   const [open, setOpen] = useState(false)
 
@@ -247,13 +218,10 @@ export default function FileSelector(props) {
   }
 
   return (
-    <FormControl
-      component={Paper}
-      disabled={disabled || loading}
-      color={color}
-      sx={{ p: 1, display: 'flex', flexFlow: 'row nowrap', gap: 1 }}
-    >
+    <Paper sx={{ p: 1, display: 'flex', flexFlow: 'row nowrap', gap: 1 }}>
       <FetchFile
+        disabled={disabled || loading}
+        color={color}
         loading={loading}
         placeholder={placeholder}
         value={value}
@@ -262,8 +230,17 @@ export default function FileSelector(props) {
         onSubmit={handleSubmit}
       />
       <Divider orientation="vertical" variant="middle" flexItem />
-      <UploadFile accept={accept} onSubmit={handleSubmit} />
-      <InputFile onSubmit={handleSubmit} />
-    </FormControl>
+      <UploadFile
+        disabled={disabled || loading}
+        color={color}
+        accept={accept}
+        onSubmit={handleSubmit}
+      />
+      <InputFile
+        disabled={disabled || loading}
+        color={color}
+        onSubmit={handleSubmit}
+      />
+    </Paper>
   )
 }
