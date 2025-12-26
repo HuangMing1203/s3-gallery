@@ -6,7 +6,6 @@ import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
-import Dialog from '@mui/material/Dialog'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import FileSelector from './components/FileSelector'
@@ -41,7 +40,6 @@ function S3FileSelector({ setImages }) {
 
 export default function App() {
   const [images, setImages] = useState([])
-  const [previewImg, setPreviewImg] = useState(null)
 
   return (
     <>
@@ -73,26 +71,9 @@ export default function App() {
               key={img.url}
               src={img.url}
               alt={`img-${i}`}
-              onClick={() => setPreviewImg(img)}
             />
           ))}
         </Box>
-
-        <Dialog
-          open={!!previewImg}
-          onClose={() => setPreviewImg(null)}
-          maxWidth={false}
-          slotProps={{ paper: { sx: { borderRadius: 0 } } }}
-        >
-          <img
-            src={previewImg?.url}
-            alt="preview"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '80vh',
-            }}
-          />
-        </Dialog>
       </Container>
     </>
   )
