@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import { useErrorMessage } from './ErrorMessageProvider'
 import request from '../utils/request'
 
@@ -13,8 +13,8 @@ import InputAdornment from '@mui/material/InputAdornment'
 import InputBase from '@mui/material/InputBase'
 import Paper from '@mui/material/Paper'
 import Tooltip from '@mui/material/Tooltip'
-import BlobInputDialog from './BlobInputDialog'
-import ConfirmationProvider from './ConfirmationProvider'
+
+const BlobInputDialog = lazy(() => import('./BlobInputDialog'))
 
 function FetchFile(props) {
   const {
@@ -167,7 +167,7 @@ function InputFile(props) {
 
   return (
     <>
-      <ConfirmationProvider>
+      <Suspense>
         <BlobInputDialog
           open={open}
           title="Paste File Content"
@@ -175,7 +175,7 @@ function InputFile(props) {
           onClose={() => setOpen(false)}
           type="text/plain"
         />
-      </ConfirmationProvider>
+      </Suspense>
 
       <Tooltip title="Paste file content">
         <IconButton

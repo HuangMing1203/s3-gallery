@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
-import { useConfirmation } from './ConfirmationProvider'
+import ConfirmationProvider, { useConfirmation } from './ConfirmationProvider'
 
 import CloseIcon from '@mui/icons-material/Close'
 import DoneIcon from '@mui/icons-material/Done'
@@ -35,6 +35,14 @@ const SlideUp = forwardRef((props, ref) => (
  * @param {string} endings - Endings option for the created Blob.
  */
 export default function BlobInputDialog(props) {
+  return (
+    <ConfirmationProvider>
+      <BlobInputDialogInternal {...props} />
+    </ConfirmationProvider>
+  )
+}
+
+function BlobInputDialogInternal(props) {
   const {
     maxWidth = 'md',
     title = 'Blob Content',
