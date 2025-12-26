@@ -1,16 +1,16 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useErrorMessage } from './components/ErrorMessageProvider'
 import parseS3FileList from './utils/parseS3FileList'
 
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import AppBar from '@mui/material/AppBar'
-import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import FileSelector from './components/FileSelector'
-import LazyImage from './components/LazyImage'
 import ErrorMessageProvider from './components/ErrorMessageProvider'
+
+const ImageList = lazy(() => import('./components/ImageList'))
 
 function S3FileSelector({ setImages }) {
   const setError = useErrorMessage()
@@ -59,21 +59,9 @@ export default function App() {
           <S3FileSelector setImages={setImages} />
         </ErrorMessageProvider>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: 2,
-          }}
-        >
-          {images.map((img, i) => (
-            <LazyImage
-              key={img.url}
-              src={img.url}
-              alt={`img-${i}`}
-            />
-          ))}
-        </Box>
+        <Suspense>
+          <ImageList images={images} />
+        </Suspense>
       </Container>
     </>
   )
