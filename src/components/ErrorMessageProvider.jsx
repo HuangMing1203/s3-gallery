@@ -1,7 +1,6 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, lazy, Suspense, useContext, useState } from 'react'
 
-import Alert from '@mui/material/Alert'
-import Snackbar from '@mui/material/Snackbar'
+const ErrorMessageSnackbar = lazy(() => import('./ErrorMessageSnackbar'))
 
 const ErrorMessageContext = createContext((message) => {
   throw new Error('no error message context provided')
@@ -24,11 +23,13 @@ export function ErrorMessageProvider({ children }) {
   return (
     <ErrorMessageContext value={showErrorMessage}>
       {children}
-      <Snackbar open={open} onClose={handleClose} autoHideDuration={6000}>
-        <Alert severity="error" onClose={handleClose} sx={{ width: '100%' }}>
-          {errorMessage}
-        </Alert>
-      </Snackbar>
+      <Suspense>
+        <ErrorMessageSnackbar
+          open={open}
+          onClose={handleClose}
+          message={errorMessage}
+        />
+      </Suspense>
     </ErrorMessageContext>
   )
 }
