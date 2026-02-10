@@ -2,7 +2,6 @@ import { lazy, Suspense, useState } from 'react'
 import { useErrorMessage } from './components/ErrorMessageProvider'
 import parseS3FileList from './utils/parseS3FileList'
 
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import AppBar from '@mui/material/AppBar'
 import Container from '@mui/material/Container'
 import Toolbar from '@mui/material/Toolbar'
@@ -45,7 +44,6 @@ export default function App() {
     <>
       <AppBar position="static">
         <Toolbar>
-          <PhotoLibraryIcon sx={{ mr: 2 }} />
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             S3 Gallery
           </Typography>
