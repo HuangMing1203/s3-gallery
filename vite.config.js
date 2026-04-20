@@ -18,15 +18,9 @@ export default defineConfig({
         theme_color: '#1976d2',
         background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait',
-        icons: [
-          {
-            src: 'vite.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
-            purpose: 'any',
-          }
-        ]
+      },
+      pwaAssets: {
+        image: "public/favicon.png",
       }
     })
   ],
