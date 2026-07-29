@@ -36,7 +36,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Use Node.js ${{ vars.BUILD_NODE_VERSION || '22.x' }}
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ vars.BUILD_NODE_VERSION || '22.x' }}
         cache: 'npm'
