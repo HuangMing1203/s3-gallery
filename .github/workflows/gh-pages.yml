@@ -44,7 +44,7 @@ jobs:
       run: npm ci
     - name: Setup Pages (for BASE_URL)
       id: configuration
-      uses: actions/configure-pages@v5
+      uses: actions/configure-pages@v6
     - name: Build
       run: npm run build
       env:
