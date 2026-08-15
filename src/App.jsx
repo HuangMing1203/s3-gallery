@@ -1,6 +1,8 @@
 import { lazy, Suspense, useState } from 'react'
 import { useErrorMessage } from './components/ErrorMessageProvider'
 import parseS3FileList from './utils/parseS3FileList'
+import { isZipBlob } from './utils/fileType'
+import { extractArchiveImages } from './utils/extractArchiveImages'
 
 import AppBar from '@mui/material/AppBar'
 import Container from '@mui/material/Container'
@@ -17,21 +19,35 @@ function S3FileSelector({ setImages }) {
   const handleFileSubmit = async (blob, url, source) => {
     setError('')
     setImages([])
+
     try {
-      const content = await blob.text()
-      const imgs = parseS3FileList(content, url)
-      if (imgs.length === 0)
-        setError('No images found in the provided S3 list.')
+      const isZip = await isZipBlob(blob)
+
+      let imgs = []
+      if (isZip) {
+        imgs = await extractArchiveImages(blob)
+        if (imgs.length === 0) setError('No images found in the provided ZIP archive.')
+      } else {
+        const content = await blob.text()
+        imgs = parseS3FileList(content, url)
+        if (imgs.length === 0) setError('No images found in the provided S3 list.')
+      }
+
       setImages(imgs)
     } catch (err) {
-      setError('Failed to parse the S3 file list.')
+      const message = err?.message || 'Failed to load the selected file.'
+      setError(
+        message.includes('zip') || message.includes('archive')
+          ? 'Failed to parse the ZIP archive.'
+          : 'Failed to parse the S3 file list.',
+      )
     }
   }
 
   return (
     <FileSelector
-      placeholder="S3 file list URL (XML)"
-      accept="text/xml,application/xml"
+      placeholder="S3 file list URL (XML) or ZIP archive URL"
+      accept="text/xml,application/xml,application/zip,application/x-zip-compressed"
       onSubmit={handleFileSubmit}
     />
   )
